@@ -55,7 +55,6 @@ pub async fn start_tunnel(args: &Cli) -> Result<()> {
     println!();
     info!("Waiting for incoming requests...");
 
-    let remote_host = Url::parse(&info.url)?.host_str().unwrap_or("").to_string();
     let base_host = Url::parse(&args.host)?.host_str().unwrap_or("server.loca.lt").to_string();
 
     let local_addr = format!("127.0.0.1:{}", args.port);
