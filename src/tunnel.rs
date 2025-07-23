@@ -1,5 +1,3 @@
-// src/tunnel.rs
-
 use crate::cli::Cli;
 use anyhow::{Context, Result};
 use colored::*;
@@ -22,13 +20,17 @@ pub async fn start_tunnel(args: &Cli) -> Result<()> {
     info!("Requesting tunnel for localhost:{}...", args.port);
 
     let client = reqwest::Client::new();
-    let server_url = args
-        .subdomain
-        .as_ref()
-        .map(|sd| format!("{}/{}", args.host, sd))
-        .unwrap_or_else(|| args.host.clone());
+    
+    let server_url = match &args.subdomain {
+        Some(sd) => format!("{}/?new={}", args.host, sd),
+        None => format!("{}/?new", args.host),
+    };
 
-    let res = client.get(&server_url).send().await?;
+    let res = client
+        .get(&server_url)
+        .header(reqwest::header::ACCEPT, "application/json")
+        .send()
+        .await?;
 
     if !res.status().is_success() {
         anyhow::bail!(
@@ -38,7 +40,12 @@ pub async fn start_tunnel(args: &Cli) -> Result<()> {
         );
     }
 
-    let info: TunnelInfo = res.json().await.context("Failed to parse server response")?;
+    let response_text = res.text().await?;
+    let info: TunnelInfo = serde_json::from_str(&response_text)
+        .with_context(|| {
+            error!("Failed to parse the following server response: <<<{}>>>", response_text);
+            "Failed to parse server response"
+        })?;
 
     println!();
     println!("{}", " Tunnel Details ".on_blue().white().bold());
@@ -48,11 +55,13 @@ pub async fn start_tunnel(args: &Cli) -> Result<()> {
     println!();
     info!("Waiting for incoming requests...");
 
-    let remote_host = Url::parse(&args.host)?.host_str().unwrap().to_string();
+    let remote_host = Url::parse(&info.url)?.host_str().unwrap_or("").to_string();
+    let base_host = Url::parse(&args.host)?.host_str().unwrap_or("server.loca.lt").to_string();
+
     let local_addr = format!("127.0.0.1:{}", args.port);
 
     for _ in 0..info.max_conn_count {
-        let remote_addr = format!("{}:{}", remote_host, info.port);
+        let remote_addr = format!("{}:{}", base_host, info.port);
         let local_addr_clone = local_addr.clone();
         tokio::spawn(async move {
             loop {
@@ -69,6 +78,7 @@ pub async fn start_tunnel(args: &Cli) -> Result<()> {
 
     Ok(())
 }
+
 
 async fn proxy_connection(remote_addr: &str, local_addr: &str) -> Result<()> {
     let remote_stream = TcpStream::connect(remote_addr)
