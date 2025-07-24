@@ -5,8 +5,6 @@
 `rtun` acts as a client for the open-source [localtunnel.me](https://localtunnel.me) service, creating a secure tunnel from a public URL to your `localhost`.
 
 ![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
-![GitHub Actions](https://img.shields.io/github/actions/workflow/status/your-username/rtun/rust.yml?style=for-the-badge)
-![Crates.io](https://img.shields.io/crates/v/rtun?style=for-the-badge)
 
 ---
 
