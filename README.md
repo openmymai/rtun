@@ -1,13 +1,3 @@
-<div align="center">
-  <a href="https://www.buymeacoffee.com/maicmi" target="_blank">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="45">
-  </a>
-  <br/>
-  <small>If rtun helps you test a webhook or demo a project, consider supporting its development!</small>
-</div>
-
-<br/>
-
 # rtun ⚡
 
 **rtun** (Rust Tunnel) is a fast, simple, and reliable command-line tool that exposes your local web server to the internet. It's like ngrok, but written in Rust for performance and safety.
